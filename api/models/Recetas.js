@@ -10,7 +10,7 @@ module.exports=(sequelize) => {
             type:DataTypes.STRING,
             allownull:false,
         },
-        instruciones:{
+        instrucciones:{
             type:DataTypes.STRING,
             allownull:false,
         },

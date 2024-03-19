@@ -269,5 +269,285 @@ app.delete('/paises/:id', protegerRuta(""), async (req, res) => {
     }
 });
 
+app.get('/recetas', protegerRuta(""), async (req, res) => {
+    try {
+        const recetas = await RecetasModel.findAll();
+        res.status(200).json({ ok: true, recetas });
+    } catch (error) {
+        console.error('Error al obtener las recetas:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener las recetas' });
+    }
+});
 
+app.get('/recetas/:nombre', protegerRuta(""), async (req, res) => {
+    try {
+        const { nombre } = req.params;
+        const receta = await RecetasModel.findOne({ where: { nombre } });
+
+        if (!receta) {
+            return res.status(404).json({ ok: false, error: 'Receta no encontrada' });
+        }
+
+        res.status(200).json({ ok: true, receta });
+    } catch (error) {
+        console.error('Error al obtener la receta:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener la receta' });
+    }
+});
+
+
+app.post('/recetas', protegerRuta(""), async (req, res) => {
+    try {
+        const { nombre, descripcion, instrucciones, imagen } = req.body;
+
+        const nuevaReceta = await RecetasModel.create({
+            nombre,
+            descripcion,
+            instrucciones,
+            imagen
+        });
+
+        res.status(201).json({ ok: true, receta: nuevaReceta });
+    } catch (error) {
+        console.error('Error al crear una nueva receta:', error);
+        res.status(500).json({ ok: false, error: 'Error al crear una nueva receta' });
+    }
+});
+app.put('/recetas/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, descripcion, instrucciones, imagen } = req.body;
+
+        const receta = await RecetasModel.findByPk(id);
+
+        if (!receta) {
+            return res.status(404).json({ ok: false, error: 'Receta no encontrada' });
+        }
+
+        receta.nombre = nombre;
+        receta.descripcion = descripcion;
+        receta.instrucciones = instrucciones;
+        receta.imagen = imagen;
+        await receta.save();
+
+        res.status(200).json({ ok: true, receta });
+    } catch (error) {
+        console.error('Error al actualizar la receta:', error);
+        res.status(500).json({ ok: false, error: 'Error al actualizar la receta' });
+    }
+});
+app.put('/recetas/:nombre', protegerRuta(""), async (req, res) => {
+    try {
+        const { nombre } = req.params;
+        const { descripcion, instrucciones, imagen } = req.body;
+
+        // Buscar la receta por su nombre
+        let receta = await RecetasModel.findOne({ where: { nombre } });
+
+        if (!receta) {
+            return res.status(404).json({ ok: false, error: 'Receta no encontrada' });
+        }
+
+        // Actualizar los campos de la receta
+        receta.descripcion = descripcion;
+        receta.instrucciones = instrucciones;
+        receta.imagen = imagen;
+        
+        // Guardar los cambios en la base de datos
+        await receta.save();
+
+        res.status(200).json({ ok: true, receta });
+    } catch (error) {
+        console.error('Error al actualizar la receta:', error);
+        res.status(500).json({ ok: false, error: 'Error al actualizar la receta' });
+    }
+});
+
+app.delete('/recetas/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const receta = await RecetasModel.findByPk(id);
+
+        if (!receta) {
+            return res.status(404).json({ ok: false, error: 'Receta no encontrada' });
+        }
+
+        await receta.destroy();
+
+        res.status(200).json({ ok: true, message: 'Receta eliminada exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar la receta:', error);
+        res.status(500).json({ ok: false, error: 'Error al eliminar la receta' });
+    }
+});
+
+// Servicio GET para obtener todos los ingredientes
+app.get('/ingredientes', protegerRuta(""), async (req, res) => {
+    try {
+        const ingredientes = await IngredientesModel.findAll();
+        res.status(200).json({ ok: true, ingredientes });
+    } catch (error) {
+        console.error('Error al obtener los ingredientes:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener los ingredientes' });
+    }
+});
+
+app.get('/ingredientes/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ingrediente = await IngredientesModel.findByPk(id);
+
+        if (!ingrediente) {
+            return res.status(404).json({ ok: false, error: 'Ingrediente no encontrado' });
+        }
+
+        res.status(200).json({ ok: true, ingrediente });
+    } catch (error) {
+        console.error('Error al obtener el ingrediente:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener el ingrediente' });
+    }
+});
+
+app.post('/ingredientes', protegerRuta(""), async (req, res) => {
+    try {
+        const { nombre } = req.body;
+
+        const nuevoIngrediente = await IngredientesModel.create({
+            nombre
+        });
+
+        res.status(201).json({ ok: true, ingrediente: nuevoIngrediente });
+    } catch (error) {
+        console.error('Error al crear un nuevo ingrediente:', error);
+        res.status(500).json({ ok: false, error: 'Error al crear un nuevo ingrediente' });
+    }
+});
+
+app.put('/ingredientes/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre } = req.body;
+
+        const ingrediente = await IngredientesModel.findByPk(id);
+
+        if (!ingrediente) {
+            return res.status(404).json({ ok: false, error: 'Ingrediente no encontrado' });
+        }
+
+        ingrediente.nombre = nombre;
+        await ingrediente.save();
+
+        res.status(200).json({ ok: true, ingrediente });
+    } catch (error) {
+        console.error('Error al actualizar el ingrediente:', error);
+        res.status(500).json({ ok: false, error: 'Error al actualizar el ingrediente' });
+    }
+});
+
+app.delete('/ingredientes/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const ingrediente = await IngredientesModel.findByPk(id);
+
+        if (!ingrediente) {
+            return res.status(404).json({ ok: false, error: 'Ingrediente no encontrado' });
+        }
+
+        await ingrediente.destroy();
+
+        res.status(200).json({ ok: true, message: 'Ingrediente eliminado exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar el ingrediente:', error);
+        res.status(500).json({ ok: false, error: 'Error al eliminar el ingrediente' });
+    }
+});
+
+app.get('/talleres', protegerRuta(""), async (req, res) => {
+    try {
+        const talleres = await TalleresModel.findAll();
+        res.status(200).json({ ok: true, talleres });
+    } catch (error) {
+        console.error('Error al obtener los talleres:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener los talleres' });
+    }
+});
+
+app.get('/talleres/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const taller = await TalleresModel.findByPk(id);
+
+        if (!taller) {
+            return res.status(404).json({ ok: false, error: 'Taller no encontrado' });
+        }
+
+        res.status(200).json({ ok: true, taller });
+    } catch (error) {
+        console.error('Error al obtener el taller:', error);
+        res.status(500).json({ ok: false, error: 'Error al obtener el taller' });
+    }
+});
+
+app.post('/talleres', protegerRuta(""), async (req, res) => {
+    try {
+        const { nombre, fecha, duracion, descripcion } = req.body;
+
+        const nuevoTaller = await TalleresModel.create({
+            nombre,
+            fecha,
+            duracion,
+            descripcion
+        });
+
+        res.status(201).json({ ok: true, taller: nuevoTaller });
+    } catch (error) {
+        console.error('Error al crear un nuevo taller:', error);
+        res.status(500).json({ ok: false, error: 'Error al crear un nuevo taller' });
+    }
+});
+
+app.put('/talleres/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, fecha, duracion, descripcion } = req.body;
+
+        const taller = await TalleresModel.findByPk(id);
+
+        if (!taller) {
+            return res.status(404).json({ ok: false, error: 'Taller no encontrado' });
+        }
+
+        taller.nombre = nombre;
+        taller.fecha = fecha;
+        taller.duracion = duracion;
+        taller.descripcion = descripcion;
+        await taller.save();
+
+        res.status(200).json({ ok: true, taller });
+    } catch (error) {
+        console.error('Error al actualizar el taller:', error);
+        res.status(500).json({ ok: false, error: 'Error al actualizar el taller' });
+    }
+});
+
+app.delete('/talleres/:id', protegerRuta(""), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const taller = await TalleresModel.findByPk(id);
+
+        if (!taller) {
+            return res.status(404).json({ ok: false, error: 'Taller no encontrado' });
+        }
+
+        await taller.destroy();
+
+        res.status(200).json({ ok: true, message: 'Taller eliminado exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar el taller:', error);
+        res.status(500).json({ ok: false, error: 'Error al eliminar el taller' });
+    }
+});
 
